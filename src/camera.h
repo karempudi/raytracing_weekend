@@ -14,6 +14,7 @@ class camera {
         double aspect_ratio = 1.0; // ration of image width to height
         int image_width = 100; // in pixels
         int samples_per_pixel = 10; // count of random samples per pixel
+        int max_depth = 10; // Maximum number of ray bounces into scene
 
         void render(const hittable& world) {
             initialize();// why do we need to intialize everytime we render
@@ -28,7 +29,7 @@ class camera {
                     for (int sample = 0; sample < samples_per_pixel; sample++) {
                         // randomly get a ray surrounding the (i, j) pixel
                         ray r = get_ray(i, j);
-                        pixel_color += ray_color(r, world);
+                        pixel_color += ray_color(r, max_depth, world);
                     } 
                     write_color(std::cout, pixel_color, samples_per_pixel);
                 }
@@ -92,14 +93,19 @@ class camera {
             
         }
 
-        color ray_color(const ray& r, const hittable& world) const {
+        color ray_color(const ray& r, int depth, const hittable& world) const {
 
              hit_record rec;
 
+             // If we exceed the depth, we return black
+             if (depth <= 0)
+                 return color(0, 0, 0);
+
              // if the ray hits, get the normal and use 
              // it to generate color
-             if(world.hit(r, interval(0, infinity), rec)) {
-                 return 0.5 * (rec.normal + color(1, 1, 1));
+             if(world.hit(r, interval(0.001, infinity), rec)) {
+                 vec3 direction = rec.normal + random_unit_vector();
+                 return 0.5 * ray_color(ray(rec.p, direction), depth - 1, world);
              }
 
              // if not the set some color
