@@ -3,10 +3,13 @@
 
 #include "ray.h"
 
+class material;
+
 class hit_record {
     public:
         point3 p; // point on the object that is hit with the ray
         vec3 normal; // nomral vector on the surface at the hit point
+        shared_ptr<material> mat;
         double t;
 
         bool front_face;

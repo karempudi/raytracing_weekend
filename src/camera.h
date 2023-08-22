@@ -5,6 +5,7 @@
 
 #include "color.h"
 #include "hittable.h"
+#include "material.h"
 
 #include <iostream>
 
@@ -104,8 +105,13 @@ class camera {
              // if the ray hits, get the normal and use 
              // it to generate color
              if(world.hit(r, interval(0.001, infinity), rec)) {
-                 vec3 direction = rec.normal + random_unit_vector();
-                 return 0.5 * ray_color(ray(rec.p, direction), depth - 1, world);
+                 ray scattered;
+                 color attenuation;
+
+                 if(rec.mat->scatter(r, rec, attenuation, scattered)) 
+                     // call the color again on the scattered 
+                     return attenuation * ray_color(scattered, depth-1, world);
+                 return color(0, 0, 0);
              }
 
              // if not the set some color
